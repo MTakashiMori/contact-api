@@ -1,0 +1,44 @@
+version: '3.7'
+services:
+    api:
+        container_name: contact-api
+        image: mtakashimori/php8
+        working_dir: /var/www/html/app
+        command: php artisan serve --host=0.0.0.0 --port=80
+        ports:
+            - "8000:80"
+        volumes:
+            - .:/var/www/html/app
+            - ./docker/httpd.conf:/etc/apache2/sites-enabled/000-default.conf
+        entrypoint:  [
+            "/bin/sh",
+            "/var/www/html/app/entrypoint.sh"
+        ]
+        stdin_open: true
+        tty: true
+        depends_on:
+            - db
+        networks:
+            main:
+                aliases:
+                    - api
+
+    db:
+        container_name: contact-db
+        image: mariadb
+        ports:
+            - "3306:3306"
+        volumes:
+            - ./db-data/:/var/lib/mysql
+        environment:
+            MARIADB_DATABASE: app-db
+            MARIADB_USER: user_user
+            MARIADB_PASSWORD: p@ssw0rd
+            MARIADB_ROOT_PASSWORD: root
+        networks:
+            main:
+                aliases:
+                    - db
+
+networks:
+    main:
